@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+env/
+
+# Node
+node_modules/
+.vite/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+.env
+backend/.env
+data/
+*.log
+/tmp/
+*.pdbqt
+*.sdf
+*.chkpt
+*.prior
+
+# Docker
+*.tar
+!Dockerfile
+
+# Pytest
+.pytest_cache/
+
+# Alembic
+alembic/versions/*
+!alembic/versions/.gitkeep
+
+# Claude
+.claude/
+
+# Test/debug scripts
+backend/reparse.py
+backend/test_toml_generator.py
+
+# Source tools (not part of the platform)
+REINVENT4/
+DockStream/
+Dockerfile
+reinvent4-tools image README.md
