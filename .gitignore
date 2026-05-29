@@ -1,15 +1,18 @@
-# Python
-__pycache__/
-*.py[cod]
-*.egg-info/
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
 dist/
 build/
-.venv/
-env/
+*.pyc
+__pycache__/
 
-# Node
-node_modules/
-.vite/
+# Environment
+.env
+.env.local
+.env.*.local
 
 # IDE
 .vscode/
@@ -21,37 +24,21 @@ node_modules/
 .DS_Store
 Thumbs.db
 
-# Project specific
-.env
-backend/.env
-data/
+# Database
+*.db
+*.sqlite
+
+# Logs
 *.log
-/tmp/
-*.pdbqt
-*.sdf
-*.chkpt
-*.prior
+logs/
+
+# Temp files
+*.tmp
+*.temp
+
+# Test files
+backend/test_*.py
+backend/check_*.py
 
 # Docker
-*.tar
-!Dockerfile
-
-# Pytest
-.pytest_cache/
-
-# Alembic
-alembic/versions/*
-!alembic/versions/.gitkeep
-
-# Claude
-.claude/
-
-# Test/debug scripts
-backend/reparse.py
-backend/test_toml_generator.py
-
-# Source tools (not part of the platform)
-REINVENT4/
-DockStream/
-Dockerfile
-reinvent4-tools image README.md
+.docker/

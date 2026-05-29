@@ -1,0 +1,337 @@
+/* ═══════════════════════════════════════════════════════════════
+   De Nove Platform - Theme (Based on Original Design)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ===== CSS Variables ===== */
+:root {
+  /* Primary - Indigo/Purple gradient */
+  --primary-50: #eef2ff;
+  --primary-100: #e0e7ff;
+  --primary-200: #c7d2fe;
+  --primary-300: #a5b4fc;
+  --primary-400: #818cf8;
+  --primary-500: #6366f1;
+  --primary-600: #4f46e5;
+  --primary-700: #4338ca;
+  --primary-800: #3730a3;
+  --primary-900: #312e81;
+  
+  /* Accent - Teal */
+  --accent-50: #f0fdfa;
+  --accent-500: #14b8a6;
+  --accent-600: #0d9488;
+  
+  /* Background */
+  --bg-body: #f8f9fc;
+  --bg-card: #ffffff;
+  --bg-sidebar: #ffffff;
+  
+  /* Text */
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  
+  /* Border */
+  --border-color: #f1f5f9;
+  --border-hover: #e0e7ff;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.02);
+  --shadow-md: 0 8px 30px rgba(0,0,0,0.06);
+  --shadow-lg: 0 25px 50px rgba(0,0,0,0.15);
+  
+  /* Gradient */
+  --gradient-primary: linear-gradient(135deg, #4f46e5, #7c3aed);
+  --gradient-hero: linear-gradient(135deg, #0c1222 0%, #1a103c 50%, #2d1b69 100%);
+}
+
+/* ===== Global Styles ===== */
+body {
+  font-family: 'Inter', 'Noto Sans SC', system-ui, sans-serif;
+  background: var(--bg-body) !important;
+  color: var(--text-primary);
+}
+
+/* ===== Layout ===== */
+.ant-layout {
+  background: var(--bg-body) !important;
+}
+
+.ant-layout-sider {
+  background: var(--bg-sidebar) !important;
+  border-right: 1px solid var(--border-color);
+}
+
+.ant-layout-header {
+  background: var(--bg-card) !important;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.ant-layout-content {
+  background: var(--bg-body) !important;
+}
+
+/* ===== Sidebar ===== */
+.ant-menu-dark {
+  background: transparent !important;
+}
+
+.ant-menu-dark .ant-menu-item {
+  border-radius: 12px;
+  margin: 4px 8px;
+  transition: all 0.2s;
+}
+
+.ant-menu-dark .ant-menu-item:hover {
+  background: var(--primary-50) !important;
+  color: var(--primary-600) !important;
+}
+
+.ant-menu-dark .ant-menu-item-selected {
+  background: var(--gradient-primary) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+}
+
+/* ===== Cards ===== */
+.ant-card {
+  background: var(--bg-card) !important;
+  border-radius: 16px !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: all 0.3s ease;
+}
+
+.ant-card:hover {
+  box-shadow: var(--shadow-md) !important;
+  border-color: var(--border-hover) !important;
+}
+
+.ant-card-head {
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+/* ===== Buttons ===== */
+.ant-btn-primary {
+  background: var(--gradient-primary) !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+  transition: all 0.2s;
+}
+
+.ant-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3) !important;
+}
+
+.ant-btn-default {
+  border-radius: 10px !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.ant-btn-default:hover {
+  border-color: var(--primary-300) !important;
+  color: var(--primary-600) !important;
+}
+
+/* ===== Inputs ===== */
+.ant-input,
+.ant-input-number,
+.ant-select-selector,
+.ant-picker {
+  border-radius: 10px !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.ant-input:focus,
+.ant-input-focused,
+.ant-input-number-focused,
+.ant-select-focused .ant-select-selector {
+  border-color: var(--primary-300) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08) !important;
+}
+
+/* ===== Table ===== */
+.ant-table {
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+.ant-table-thead > tr > th {
+  background: var(--gradient-primary) !important;
+  color: #fff !important;
+  font-weight: 500 !important;
+  border-bottom: none !important;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: #f8fafc !important;
+}
+
+.ant-table-tbody > tr > td {
+  border-bottom: 1px solid #f8fafc !important;
+}
+
+/* ===== Tags ===== */
+.ant-tag {
+  border-radius: 8px !important;
+}
+
+/* ===== Progress ===== */
+.ant-progress-bg {
+  background: var(--gradient-primary) !important;
+}
+
+/* ===== Modal ===== */
+.ant-modal-content {
+  border-radius: 20px !important;
+  overflow: hidden;
+}
+
+.ant-modal-header {
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+/* ===== Steps ===== */
+.ant-steps-item-icon {
+  background: var(--gradient-primary) !important;
+  border-color: var(--primary-500) !important;
+}
+
+.ant-steps-item-process .ant-steps-item-icon {
+  background: var(--gradient-primary) !important;
+}
+
+/* ===== Tabs ===== */
+.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: var(--primary-600) !important;
+  font-weight: 600;
+}
+
+.ant-tabs-ink-bar {
+  background: var(--gradient-primary) !important;
+}
+
+/* ===== Menu ===== */
+.ant-dropdown-menu {
+  border-radius: 12px !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-200);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-300);
+}
+
+/* ===== Animations ===== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.animate-fade-in {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* ===== NGL Viewer ===== */
+.ngl-container {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* ===== Status Colors ===== */
+.status-good { color: #059669; font-weight: 600; }
+.status-mid { color: #d97706; font-weight: 500; }
+.status-bad { color: #dc2626; }
+
+/* ===== Upload Zone ===== */
+.ant-upload-drag {
+  border-radius: 12px !important;
+  border: 2px dashed var(--primary-200) !important;
+}
+
+.ant-upload-drag:hover {
+  border-color: var(--primary-500) !important;
+}
+
+/* ===== Select ===== */
+.ant-select-dropdown {
+  border-radius: 12px !important;
+}
+
+/* ===== Tooltip ===== */
+.ant-tooltip-inner {
+  border-radius: 8px !important;
+}
+
+/* ===== Popover ===== */
+.ant-popover-inner {
+  border-radius: 12px !important;
+}
+
+/* ===== Form ===== */
+.ant-form-item-label > label {
+  color: var(--text-secondary) !important;
+  font-size: 12px !important;
+  font-weight: 500;
+}
+
+/* ===== Description ===== */
+.ant-descriptions-item-label {
+  color: var(--text-secondary) !important;
+}
+
+/* ===== Radio ===== */
+.ant-radio-button-wrapper-checked {
+  background: var(--primary-500) !important;
+  border-color: var(--primary-500) !important;
+  color: #fff !important;
+}
+
+/* ===== Switch ===== */
+.ant-switch-checked {
+  background: var(--primary-500) !important;
+}
+
+/* ===== Badge ===== */
+.ant-badge-count {
+  background: var(--primary-500) !important;
+}
+
+/* ===== Alert ===== */
+.ant-alert-info {
+  border-color: var(--primary-200) !important;
+  background: var(--primary-50) !important;
+}
+
+/* ===== Message ===== */
+.ant-message-notice-content {
+  border-radius: 10px !important;
+}
+
+/* ===== Notification ===== */
+.ant-notification-notice {
+  border-radius: 12px !important;
+}
