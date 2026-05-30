@@ -3,7 +3,6 @@ import { Layout, Menu, Typography } from 'antd'
 import {
   DashboardOutlined,
   PlusOutlined,
-  ExperimentOutlined,
   DatabaseOutlined,
 } from '@ant-design/icons'
 
@@ -11,7 +10,7 @@ const { Header, Sider, Content } = Layout
 const { Text } = Typography
 
 const menuItems = [
-  { key: '/', icon: <DashboardOutlined />, label: '项目列表' },
+  { key: '/dashboard', icon: <DashboardOutlined />, label: '项目列表' },
   { key: '/projects/new', icon: <PlusOutlined />, label: '新建项目' },
   { key: '/targets', icon: <DatabaseOutlined />, label: '靶点库' },
 ]
@@ -21,45 +20,92 @@ export default function AppShell() {
   const location = useLocation()
 
   const selectedKey = menuItems
-    .filter((item) => item.key !== '/')
-    .find((item) => location.pathname.startsWith(item.key))?.key || '/'
+    .find((item) => item.key !== '/' && location.pathname.startsWith(item.key))?.key || '/dashboard'
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Sider width={240} style={{ background: '#001529' }}>
-        <div style={{
-          padding: '20px 24px',
-          borderBottom: '1px solid rgba(255,255,255,0.1)',
-        }}>
-          <Text strong style={{ color: '#fff', fontSize: 15, whiteSpace: 'normal' }}>
-            De novo 双靶点抑制剂设计平台
-          </Text>
+    <Layout style={{ minHeight: '100vh', background: '#f8f9fa' }}>
+      <Sider 
+        width={240} 
+        style={{ 
+          background: '#ffffff',
+          borderRight: '1px solid #e9ecef',
+          boxShadow: '2px 0 8px rgba(0,0,0,0.04)',
+        }}
+      >
+        <div
+          onClick={() => navigate('/')}
+          style={{
+            padding: '20px 24px',
+            borderBottom: '1px solid #e9ecef',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            cursor: 'pointer',
+            transition: 'opacity .2s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+          onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+        >
+          <div style={{
+            width: 36,
+            height: 36,
+            borderRadius: 12,
+            background: 'linear-gradient(135deg, #4c6ef5, #7950f2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 12px rgba(76, 110, 245, 0.3)',
+          }}>
+            <svg width="16" height="18" viewBox="0 0 448 512" fill="#fff">
+              <path d="M416 0c17.7 0 32 14.3 32 32c0 59.8-30.3 107.5-69.4 146.6c-28 28-62.5 53.5-97.3 77.4l-2.5 1.7c-11.9 8.1-23.8 16.1-35.5 23.9l-1.6 1c-6 4-11.9 7.9-17.8 11.9c-20.9 14-40.8 27.7-59.3 41.5l118.5 0c-9.8-7.4-20.1-14.7-30.7-22.1l7-4.7 3-2c15.1-10.1 30.9-20.6 46.7-31.6c25 18.1 48.9 37.3 69.4 57.7C417.7 372.5 448 420.2 448 480c0 17.7-14.3 32-32 32s-32-14.3-32-32L64 480c0 17.7-14.3 32-32 32s-32-14.3-32-32c0-59.8 30.3-107.5 69.4-146.6c28-28 62.5-53.5 97.3-77.4c-34.8-23.9-69.3-49.3-97.3-77.4C30.3 139.5 0 91.8 0 32C0 14.3 14.3 0 32 0S64 14.3 64 32l320 0c0-17.7 14.3-32 32-32zM338.6 384l-229.2 0c-10.1 10.6-18.6 21.3-25.5 32l280.2 0c-6.8-10.7-15.3-21.4-25.5-32zM109.4 128l229.2 0c10.1-10.7 18.6-21.3 25.5-32L83.9 96c6.8 10.7 15.3 21.3 25.5 32zm55.4 48c18.4 13.8 38.4 27.5 59.3 41.5c20.9-14 40.8-27.7 59.3-41.5l-118.5 0z"/>
+            </svg>
+          </div>
+          <div>
+            <Text strong style={{ fontSize: 15, color: '#212529' }}>De Nove</Text>
+            <div style={{ fontSize: 11, color: '#6c757d', marginTop: 2 }}>双靶点智能分子设计</div>
+          </div>
         </div>
-        <Menu
-          theme="dark"
-          mode="inline"
-          selectedKeys={[selectedKey]}
-          items={menuItems}
-          onClick={({ key }) => navigate(key)}
-          style={{ marginTop: 8 }}
-        />
+        <div style={{ padding: '16px 12px' }}>
+          <div style={{ 
+            fontSize: 11, 
+            fontWeight: 600, 
+            textTransform: 'uppercase', 
+            letterSpacing: '0.5px', 
+            color: '#adb5bd', 
+            padding: '0 14px', 
+            marginBottom: 8 
+          }}>
+            工作流
+          </div>
+          <Menu
+            mode="inline"
+            selectedKeys={[selectedKey]}
+            items={menuItems}
+            onClick={({ key }) => navigate(key)}
+            style={{ background: 'transparent', border: 'none' }}
+          />
+        </div>
       </Sider>
       <Layout>
         <Header style={{
-          background: '#141414',
+          background: '#ffffff',
           padding: '0 24px',
-          borderBottom: '1px solid #303030',
+          borderBottom: '1px solid #e9ecef',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'flex-end',
+          justifyContent: 'space-between',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
         }}>
-          <Text style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13 }}>
-            AI驱动的分子设计平台 v1.0
+          <Text style={{ color: '#6c757d', fontSize: 13 }}>
+            AI-driven Molecular Design Platform
+          </Text>
+          <Text style={{ color: '#adb5bd', fontSize: 12 }}>
+            v1.1.0
           </Text>
         </Header>
         <Content style={{
           padding: 24,
-          background: '#000',
+          background: '#f8f9fa',
           overflow: 'auto',
         }}>
           <Outlet />

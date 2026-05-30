@@ -131,7 +131,7 @@ export default function TargetDetailPage() {
           <Card title="基本信息" size="small" style={{ marginBottom: 16 }}>
             <Descriptions column={1} size="small">
               <Descriptions.Item label="文件">{target.pdbqt_filename}</Descriptions.Item>
-              <Descriptions.Item label="文件大小">{(target.pdbqt_file_size / 1024).toFixed(1)} KB</Descriptions.Item>
+              <Descriptions.Item label="文件大小">{((target.pdbqt_file_size ?? 0) / 1024).toFixed(1)} KB</Descriptions.Item>
               <Descriptions.Item label="穷举性">{target.exhaustiveness}</Descriptions.Item>
               <Descriptions.Item label="创建时间">{new Date(target.created_at).toLocaleString()}</Descriptions.Item>
             </Descriptions>

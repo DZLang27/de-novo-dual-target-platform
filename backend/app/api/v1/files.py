@@ -1,19 +1,62 @@
-"""File serving endpoints - SDF poses, PDB targets. Public read access."""
+"""File serving endpoints - SDF poses, PDB targets, 2D structure images. Public read access."""
 
 from uuid import UUID
 from pathlib import Path
+from io import BytesIO
 
-from fastapi import APIRouter, HTTPException
-from fastapi.responses import FileResponse
+from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import FileResponse, StreamingResponse
 
 from app.services.file_storage import get_target_path, RESULTS_DIR, TARGETS_DIR
 
 router = APIRouter()
 
 
+@router.get("/2d/{smiles_hash}")
+async def get_molecule_2d(
+    smiles_hash: str,
+    width: int = Query(300, ge=100, le=800),
+    height: int = Query(200, ge=100, le=600),
+):
+    """Generate 2D structure image from SMILES (base64 encoded in query or filename convention).
+    
+    For simplicity, we accept SMILES as a query parameter and generate SVG/PNG on the fly.
+    This endpoint caches nothing - frontend should cache the response.
+    """
+    # This endpoint is not used directly; see the SMILES-based endpoint below
+    raise HTTPException(status_code=404, detail="Use /files/2d-image endpoint")
+
+
+@router.get("/2d-image")
+async def get_molecule_2d_image(
+    smiles: str = Query(..., description="SMILES string"),
+    width: int = Query(300, ge=100, le=800),
+    height: int = Query(200, ge=100, le=600),
+):
+    """Generate 2D molecular structure image from SMILES as SVG."""
+    from rdkit import Chem
+    from rdkit.Chem import Draw, AllChem
+    from io import BytesIO
+
+    mol = Chem.MolFromSmiles(smiles)
+    if mol is None:
+        raise HTTPException(status_code=400, detail="Invalid SMILES string")
+
+    AllChem.Compute2DCoords(mol)
+    drawer = Draw.MolDraw2DSVG(width, height)
+    drawer.DrawMolecule(mol)
+    drawer.FinishDrawing()
+
+    svg_data = drawer.GetDrawingText()
+    return StreamingResponse(
+        BytesIO(svg_data.encode("utf-8")),
+        media_type="image/svg+xml",
+    )
+
+
 @router.get("/sdf/{task_id}")
 async def get_pose_sdf(
-    task_id: UUID,
+    task_id: str,
     step: int = 0,
     smiles: str | None = None,
     target: str | None = None,
@@ -22,19 +65,45 @@ async def get_pose_sdf(
     """Serve SDF poses.
     - step: RL step number (0-indexed)
     - smiles: match ligand by canonical SMILES
-    - target: target index suffix for per-target SDF files
+    - target: target index suffix (e.g. "t0", "t1")
     - conformer: 0=best only, None=all conformers
     """
-    target_suffix = f"_{target}" if target else ""
-    sdf_path = RESULTS_DIR / str(task_id) / f"{step}poses{target_suffix}.sdf"
-    if not sdf_path.exists():
-        sdf_path = RESULTS_DIR / str(task_id) / f"{step}poses.sdf"
-    if not sdf_path.exists():
-        alt_path = RESULTS_DIR / str(task_id) / "poses.sdf"
-        if alt_path.exists():
-            sdf_path = alt_path
+    result_dir = RESULTS_DIR / str(task_id)
+    
+    # Try different SDF file patterns
+    sdf_path = None
+    
+    # Pattern 1: {step}poses_{target}.sdf (with target suffix)
+    if target:
+        sdf_path = result_dir / f"{step}poses_{target}.sdf"
+        if sdf_path.exists():
+            pass  # found
         else:
-            raise HTTPException(status_code=404, detail="SDF file not found")
+            sdf_path = None
+    
+    # Pattern 2: {step}poses_t0.sdf (default to first target)
+    if sdf_path is None:
+        sdf_path = result_dir / f"{step}poses_t0.sdf"
+        if sdf_path.exists():
+            pass
+        else:
+            sdf_path = None
+    
+    # Pattern 3: {step}poses.sdf
+    if sdf_path is None:
+        sdf_path = result_dir / f"{step}poses.sdf"
+        if sdf_path.exists():
+            pass
+        else:
+            sdf_path = None
+    
+    # Pattern 4: poses.sdf
+    if sdf_path is None:
+        sdf_path = result_dir / "poses.sdf"
+        if sdf_path.exists():
+            pass
+        else:
+            raise HTTPException(status_code=404, detail=f"SDF file not found in {result_dir}")
 
     if smiles is not None:
         from rdkit import Chem
@@ -90,12 +159,17 @@ async def get_pose_sdf(
 
 @router.get("/pdb/{target_id}")
 async def get_target_pdb(
-    target_id: UUID,
+    target_id: str,
+    remove_ligand: bool = Query(default=False, description="Remove reference ligand"),
 ):
-    # Find the PDBQT file by target_id — get filename from DB via raw connection
+    """Return target protein as pure PDB format.
+    
+    - remove_ligand: if True, remove HETATM ligands (keep only ATOM and water)
+    """
     from app.database import get_sync_db
     from app.models.target import Target
     from sqlalchemy import select as sa_select
+    import tempfile, os
 
     db = get_sync_db()
     try:
@@ -111,7 +185,36 @@ async def get_target_pdb(
     finally:
         db.close()
 
+    # Water residue names to keep
+    water_names = {'HOH', 'WAT', 'H2O', 'OH2', 'TIP', 'TIP3', 'TIP4', 'DOD'}
+
+    # Convert PDBQT to pure PDB
+    with open(pdbqt_path, 'r') as f:
+        lines = f.readlines()
+
+    pdb_lines = []
+    for line in lines:
+        if line.startswith('ATOM'):
+            pdb_lines.append(line[:80].rstrip() + '\n')
+        elif line.startswith('HETATM'):
+            if not remove_ligand:
+                # Keep all HETATM
+                pdb_lines.append(line[:80].rstrip() + '\n')
+            else:
+                # Only keep water molecules
+                res_name = line[17:20].strip() if len(line) > 20 else ''
+                if res_name in water_names:
+                    pdb_lines.append(line[:80].rstrip() + '\n')
+        elif line.startswith(('TER', 'END')):
+            pdb_lines.append(line[:80].rstrip() + '\n')
+
+    # Write to temp file and return
+    tmp = tempfile.NamedTemporaryFile(suffix='.pdb', delete=False, mode='w')
+    tmp.writelines(pdb_lines)
+    tmp.close()
+
     return FileResponse(
-        pdbqt_path,
+        tmp.name,
         media_type="chemical/x-pdb",
+        background=lambda: os.unlink(tmp.name),
     )

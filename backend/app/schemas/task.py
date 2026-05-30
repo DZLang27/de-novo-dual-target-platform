@@ -38,7 +38,7 @@ class TargetOverride(BaseModel):
 
 
 class TaskSubmitRequest(BaseModel):
-    project_id: UUID
+    project_id: str  # Changed from UUID for SQLite compatibility
     mode: str = Field(default="reinvent", pattern="^(reinvent|libinvent|linkinvent)$")
     max_steps: int = Field(default=200, ge=1, le=500)
     batch_size: int = Field(default=128, ge=16, le=512)
@@ -52,8 +52,8 @@ class TaskSubmitRequest(BaseModel):
 
 
 class TaskResponse(BaseModel):
-    id: UUID
-    project_id: UUID
+    id: str
+    project_id: str
     task_number: int = 0
     status: str
     mode: str
@@ -74,8 +74,8 @@ class TaskResponse(BaseModel):
 
 
 class TaskListItem(BaseModel):
-    id: UUID
-    project_id: UUID
+    id: str
+    project_id: str
     task_number: int = 0
     status: str
     mode: str
@@ -83,18 +83,20 @@ class TaskListItem(BaseModel):
     current_step: int
     best_score: float | None
     total_molecules: int
+    progress_pct: float = 0.0
     created_at: datetime
 
-    @property
-    def progress_pct(self) -> float:
-        if self.max_steps == 0:
-            return 0.0
-        return round(self.current_step / self.max_steps * 100, 1)
-
     model_config = {"from_attributes": True}
+
+
+class TaskListPage(BaseModel):
+    items: list[TaskListItem]
+    total: int
+    page: int
+    page_size: int
 
 
 class TaskQueueStatus(BaseModel):
     queue_length: int
     gpu_available: bool
-    current_task_id: UUID | None = None
+    current_task_id: str | None = None

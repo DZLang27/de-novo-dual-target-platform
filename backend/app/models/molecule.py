@@ -3,9 +3,8 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import String, Integer, Float, Text, Boolean, ForeignKey, DateTime, UniqueConstraint
+from sqlalchemy import String, Integer, Float, Text, Boolean, ForeignKey, DateTime, UniqueConstraint, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import UUID, JSONB
 
 from app.database import Base
 
@@ -13,11 +12,11 @@ from app.database import Base
 class Molecule(Base):
     __tablename__ = "molecules"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    id: Mapped[str] = mapped_column(
+        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
     )
-    task_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False, index=True
+    task_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False, index=True
     )
     smiles: Mapped[str] = mapped_column(Text, nullable=False)
     step_number: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -26,7 +25,7 @@ class Molecule(Base):
     sa_score: Mapped[float | None] = mapped_column(Float, nullable=True)
     mol_weight: Mapped[float | None] = mapped_column(Float, nullable=True)
     logp: Mapped[float | None] = mapped_column(Float, nullable=True)
-    component_scores: Mapped[dict | None] = mapped_column(JSONB, default=dict)
+    component_scores: Mapped[dict | None] = mapped_column(JSON, default=dict)
     sdf_index: Mapped[int | None] = mapped_column(Integer, nullable=True)
     is_valid: Mapped[bool] = mapped_column(Boolean, default=True)
     is_duplicate: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -44,14 +43,14 @@ class DockingPose(Base):
         UniqueConstraint("molecule_id", "target_id", "rank", name="uq_pose"),
     )
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    id: Mapped[str] = mapped_column(
+        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
     )
-    molecule_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("molecules.id", ondelete="CASCADE"), nullable=False, index=True
+    molecule_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("molecules.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    target_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("targets.id", ondelete="RESTRICT"), nullable=False
+    target_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("targets.id", ondelete="RESTRICT"), nullable=False
     )
     rank: Mapped[int] = mapped_column(Integer, default=1)
     docking_score: Mapped[float] = mapped_column(Float, nullable=False)

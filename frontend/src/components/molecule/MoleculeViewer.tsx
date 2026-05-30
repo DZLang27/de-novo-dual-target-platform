@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Spin, Typography } from 'antd'
+import { Spin, Typography, Switch, Space, Radio } from 'antd'
 
 const { Text } = Typography
 
@@ -11,6 +11,8 @@ interface Props {
   activeTargetIndex: number
 }
 
+type ProteinStyle = 'cartoon' | 'surface' | 'ball+stick'
+
 export default function MoleculeViewer({
   taskId, stepNumber, smiles, targetIds, activeTargetIndex,
 }: Props) {
@@ -19,6 +21,9 @@ export default function MoleculeViewer({
   const stageReady = useRef(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [proteinStyle, setProteinStyle] = useState<ProteinStyle>('cartoon')
+  const proteinCompRef = useRef<any>(null)
+  const representationsRef = useRef<Map<ProteinStyle, any>>(new Map())
 
   // Load NGL once
   useEffect(() => {
@@ -40,15 +45,18 @@ export default function MoleculeViewer({
     }
   }, [])
 
-  // Load molecule data (re-runs when target or molecule changes)
+  // Load molecule data when ready and dependencies change
   useEffect(() => {
-    if (!stageReady.current || targetIds.length === 0) return
+    // If NGL not ready yet, skip (will be triggered again when it loads)
+    if (!stageReady.current) return
+    if (targetIds.length === 0) return
 
     const targetId = targetIds[activeTargetIndex] || targetIds[0]
     if (!targetId) return
 
     setError(null)
     setLoading(true)
+    representationsRef.current.clear()
 
     const baseUrl = 'http://127.0.0.1:8000'
     const proteinUrl = `${baseUrl}/api/v1/files/pdb/${targetId}`
@@ -63,45 +71,104 @@ export default function MoleculeViewer({
       stage.loadFile(ligandUrl, { ext: 'sdf' }),
     ])
       .then(([proteinComp, ligandComp]: any[]) => {
-        proteinComp.addRepresentation('cartoon', { colorScheme: 'sstruc', opacity: 0.9 })
-        proteinComp.addRepresentation('surface', { sele: 'not protein', opacity: 0.15 })
+        proteinCompRef.current = proteinComp
+        
+        // Create all representations but only show the selected one
+        const cartoon = proteinComp.addRepresentation('cartoon', { colorScheme: 'sstruc', opacity: 0.9, visible: proteinStyle === 'cartoon' })
+        
+        // Create AV surface (high quality molecular surface - PyMOL-like)
+        const surfaceAv = proteinComp.addRepresentation('surface', { 
+          colorScheme: 'sstruc', 
+          opacity: 0.95, 
+          visible: proteinStyle === 'surface',
+          surfaceType: 'av',
+          probeRadius: 1.4,
+          smoothSheet: true,
+          scaleFactor: 1.0,
+          side: 'front',
+          useWorker: false,
+        })
+        
+        const ballstick = proteinComp.addRepresentation('ball+stick', { 
+          sele: 'not water and not hydrogen', 
+          multipleBond: 'symmetric', 
+          colorScheme: 'element',
+          visible: proteinStyle === 'ball+stick',
+        })
+        
+        representationsRef.current.set('cartoon', cartoon)
+        representationsRef.current.set('surface', surfaceAv)
+        representationsRef.current.set('ball+stick', ballstick)
+        
         ligandComp.addRepresentation('licorice', { multipleBond: 'symmetric', colorScheme: 'element' })
         ligandComp.autoView(800)
         setLoading(false)
       })
       .catch((err: any) => {
         console.error('NGL error:', err)
-        setError(`加载失败: ${err?.message || err}`)
+        setError(`加载失败: ${err.message}`)
         setLoading(false)
       })
-  }, [taskId, stepNumber, smiles, activeTargetIndex])
+  }, [taskId, stepNumber, smiles, activeTargetIndex, targetIds])
+
+  // Handle protein style change
+  function handleStyleChange(style: ProteinStyle) {
+    console.log('Changing to style:', style, 'Available reps:', Array.from(representationsRef.current.keys()))
+    setProteinStyle(style)
+    representationsRef.current.forEach((rep, key) => {
+      console.log('Setting visibility:', key, key === style)
+      rep.setVisibility(key === style)
+      // Force rebuild surface when showing it
+      if (key === 'surface' && key === style) {
+        const params = rep.getParameters()
+        console.log('Surface params:', params)
+        rep.build(params)
+      }
+    })
+  }
 
   return (
-    <div
-      ref={containerRef}
-      style={{
-        width: '100%', height: 500, position: 'relative',
-        borderRadius: 8, overflow: 'hidden', background: '#1a1a2e',
-      }}
-    >
-      {loading && (
-        <div style={{
-          position: 'absolute', inset: 0,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: 'rgba(0,0,0,0.6)', zIndex: 10,
-        }}>
-          <Spin>加载 3D 结构中...</Spin>
-        </div>
-      )}
-      {error && (
-        <div style={{
-          position: 'absolute', inset: 0,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10,
-          background: 'rgba(0,0,0,0.7)',
-        }}>
-          <Text type="danger" style={{ textAlign: 'center', padding: 16 }}>{error}</Text>
-        </div>
-      )}
+    <div>
+      <div style={{ marginBottom: 8 }}>
+        <Space>
+          <Text type="secondary">蛋白样式:</Text>
+          <Radio.Group 
+            size="small" 
+            value={proteinStyle} 
+            onChange={(e) => handleStyleChange(e.target.value)}
+          >
+            <Radio.Button value="cartoon">Cartoon</Radio.Button>
+            <Radio.Button value="surface">Surface</Radio.Button>
+            <Radio.Button value="ball+stick">Ball+Stick</Radio.Button>
+          </Radio.Group>
+        </Space>
+      </div>
+      <div
+        ref={containerRef}
+        style={{
+          width: '100%', height: 500, position: 'relative',
+          borderRadius: 8, overflow: 'hidden', background: '#1a1a2e',
+        }}
+      >
+        {loading && (
+          <div style={{
+            position: 'absolute', inset: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.6)', zIndex: 10,
+          }}>
+            <Spin>加载 3D 结构中...</Spin>
+          </div>
+        )}
+        {error && (
+          <div style={{
+            position: 'absolute', inset: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10,
+            background: 'rgba(0,0,0,0.7)',
+          }}>
+            <Text type="danger" style={{ textAlign: 'center', padding: 16 }}>{error}</Text>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

@@ -11,7 +11,7 @@ class SessionCreate(BaseModel):
 
 
 class SessionResponse(BaseModel):
-    id: UUID
+    id: str
     token: str
     label: str | None = None
     created_at: datetime

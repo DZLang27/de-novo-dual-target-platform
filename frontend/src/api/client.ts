@@ -13,7 +13,7 @@ export function getSessionToken(): string {
 
 const apiClient = axios.create({
   baseURL: '/api/v1',
-  timeout: 30000,
+  timeout: 180000,  // 3 minutes for protein preparation
 })
 
 apiClient.interceptors.request.use((config) => {

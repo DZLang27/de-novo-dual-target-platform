@@ -37,6 +37,27 @@ export interface MoleculeListPage {
   total_pages: number
 }
 
+export interface ScoreStatistics {
+  task_id: string
+  total_molecules: number
+  score_by_step: Array<{
+    step: number
+    max_score: number
+    avg_score: number
+    min_score: number
+    count: number
+  }>
+  component_stats: Record<string, {
+    min: number
+    max: number
+    avg: number
+  }>
+  score_distribution: Array<{
+    range: string
+    count: number
+  }>
+}
+
 export async function fetchMolecules(
   taskId: string,
   params: {
@@ -60,5 +81,32 @@ export async function fetchMoleculePoses(id: string): Promise<DockingPoseData[]>
 
 export async function downloadCsv(taskId: string): Promise<Blob> {
   const { data } = await apiClient.get(`/tasks/${taskId}/export/csv`, { responseType: 'blob' })
+  return data
+}
+
+export async function fetchTaskStatistics(taskId: string): Promise<ScoreStatistics> {
+  const { data } = await apiClient.get(`/tasks/${taskId}/statistics`)
+  return data
+}
+
+export interface TaskComparisonItem {
+  task_id: string
+  task_number: number
+  status: string
+  total_molecules: number
+  best_score: number | null
+  avg_score: number | null
+  max_steps: number
+  current_step: number
+}
+
+export interface TaskComparisonData {
+  tasks: TaskComparisonItem[]
+}
+
+export async function fetchTaskComparison(taskIds: string[]): Promise<TaskComparisonData> {
+  const { data } = await apiClient.get('/tasks/comparison', {
+    params: { task_ids: taskIds.join(',') }
+  })
   return data
 }

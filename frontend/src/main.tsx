@@ -7,11 +7,10 @@ import App from './App'
 
 const platformTheme = {
   token: {
-    colorPrimary: '#1677ff',
+    colorPrimary: '#4c6ef5',
     borderRadius: 8,
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
   },
-  algorithm: theme.darkAlgorithm,
+  algorithm: theme.defaultAlgorithm,
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

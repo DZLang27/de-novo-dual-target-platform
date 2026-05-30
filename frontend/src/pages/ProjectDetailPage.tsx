@@ -36,9 +36,9 @@ export default function ProjectDetailPage() {
     if (!projectId) return
     setLoading(true)
     try {
-      const [p, t] = await Promise.all([fetchProject(projectId), fetchTasks(projectId)])
+      const [p, t] = await Promise.all([fetchProject(projectId), fetchTasks({ project_id: projectId })])
       setProject(p)
-      setTasks(t)
+      setTasks(t.items)
     } finally { setLoading(false) }
   }
 

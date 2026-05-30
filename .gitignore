@@ -42,3 +42,14 @@ backend/check_*.py
 
 # Docker
 .docker/
+
+# Dependencies / External tools
+REINVENT4/
+DockStream/
+data/
+platform/
+
+# OpenCode
+.claude/
+AGENTS.md
+dev.db

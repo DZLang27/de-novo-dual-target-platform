@@ -15,7 +15,7 @@ from app.models.project import Project, ProjectTarget
 from app.models.target import Target
 from app.models.task import Task, TaskTarget
 from app.schemas.task import (
-    TaskSubmitRequest, TaskResponse, TaskListItem, TaskQueueStatus,
+    TaskSubmitRequest, TaskResponse, TaskListItem, TaskListPage, TaskQueueStatus,
 )
 from app.schemas.molecule import MoleculeListItem, MoleculeListPage, MoleculeListParams
 from app.models.molecule import Molecule
@@ -41,27 +41,46 @@ def _build_task_response(task: Task) -> TaskResponse:
     )
 
 
-@router.get("", response_model=list[TaskListItem])
+@router.get("", response_model=TaskListPage)
 async def list_tasks(
-    project_id: UUID | None = Query(None),
+    project_id: str | None = Query(None),
     status: str | None = Query(None),
     page: int = 1,
     page_size: int = 20,
     session: Session = Depends(get_or_create_session),
     db: AsyncSession = Depends(get_db),
 ):
-    query = select(Task).where(Task.session_id == session.id)
+    base_query = select(Task).where(Task.session_id == session.id)
     if project_id:
-        query = query.where(Task.project_id == project_id)
+        base_query = base_query.where(Task.project_id == project_id)
     if status:
-        query = query.where(Task.status == status)
+        base_query = base_query.where(Task.status == status)
 
-    query = query.order_by(Task.created_at.desc())
+    count_result = await db.execute(
+        select(func.count(Task.id)).select_from(base_query.subquery())
+    )
+    total = count_result.scalar() or 0
+
+    query = base_query.order_by(Task.created_at.desc())
     offset = (page - 1) * page_size
     query = query.offset(offset).limit(page_size)
 
     result = await db.execute(query)
-    return result.scalars().all()
+    tasks = result.scalars().all()
+
+    items = []
+    for task in tasks:
+        progress = 0.0
+        if task.max_steps > 0:
+            progress = round(task.current_step / task.max_steps * 100, 1)
+        items.append(TaskListItem(
+            id=task.id, project_id=task.project_id, task_number=task.task_number,
+            status=task.status, mode=task.mode, max_steps=task.max_steps,
+            current_step=task.current_step, best_score=task.best_score,
+            total_molecules=task.total_molecules, progress_pct=progress,
+            created_at=task.created_at,
+        ))
+    return TaskListPage(items=items, total=total, page=page, page_size=page_size)
 
 
 @router.get("/queue-status", response_model=TaskQueueStatus)
@@ -190,7 +209,7 @@ async def submit_task(
 
 @router.get("/{task_id}", response_model=TaskResponse)
 async def get_task(
-    task_id: UUID,
+    task_id: str,
     session: Session = Depends(get_or_create_session),
     db: AsyncSession = Depends(get_db),
 ):
@@ -205,7 +224,7 @@ async def get_task(
 
 @router.post("/{task_id}/cancel", response_model=TaskResponse)
 async def cancel_task(
-    task_id: UUID,
+    task_id: str,
     session: Session = Depends(get_or_create_session),
     db: AsyncSession = Depends(get_db),
 ):
@@ -231,7 +250,7 @@ async def cancel_task(
 
 @router.get("/{task_id}/log")
 async def get_task_log(
-    task_id: UUID,
+    task_id: str,
     tail: int = Query(default=100, ge=1, le=1000),
     session: Session = Depends(get_or_create_session),
     db: AsyncSession = Depends(get_db),
@@ -248,7 +267,7 @@ async def get_task_log(
 @router.websocket("/ws/tasks/{task_id}")
 async def task_websocket(
     websocket: WebSocket,
-    task_id: UUID,
+    task_id: str,
     token: str = Query(...),
 ):
     from app.websocket.progress import progress_manager

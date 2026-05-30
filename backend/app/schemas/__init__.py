@@ -5,7 +5,7 @@ from .project import (
     ProjectTargetLink, ProjectTargetResponse,
 )
 from .task import (
-    TaskSubmitRequest, TaskResponse, TaskListItem,
+    TaskSubmitRequest, TaskResponse, TaskListItem, TaskListPage,
     TargetOverride, ScoringComponentSpec, TransformSpec,
     TaskQueueStatus,
 )

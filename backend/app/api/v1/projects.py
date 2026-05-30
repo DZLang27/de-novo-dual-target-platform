@@ -73,7 +73,7 @@ async def create_project(
 
 @router.get("/{project_id}", response_model=ProjectResponse)
 async def get_project(
-    project_id: UUID,
+    project_id: str,
     session: Session = Depends(get_or_create_session),
     db: AsyncSession = Depends(get_db),
 ):
@@ -103,7 +103,7 @@ async def get_project(
 
 @router.patch("/{project_id}", response_model=ProjectResponse)
 async def update_project(
-    project_id: UUID,
+    project_id: str,
     data: ProjectUpdate,
     session: Session = Depends(get_or_create_session),
     db: AsyncSession = Depends(get_db),
@@ -131,7 +131,7 @@ async def update_project(
 
 @router.delete("/{project_id}", status_code=204)
 async def delete_project(
-    project_id: UUID,
+    project_id: str,
     session: Session = Depends(get_or_create_session),
     db: AsyncSession = Depends(get_db),
 ):
@@ -149,7 +149,7 @@ async def delete_project(
 
 @router.post("/{project_id}/targets", response_model=ProjectResponse, status_code=201)
 async def link_target(
-    project_id: UUID,
+    project_id: str,
     data: ProjectTargetLink,
     session: Session = Depends(get_or_create_session),
     db: AsyncSession = Depends(get_db),
@@ -213,7 +213,7 @@ async def link_target(
 
 @router.delete("/{project_id}/targets/{target_id}", status_code=204)
 async def unlink_target(
-    project_id: UUID,
+    project_id: str,
     target_id: UUID,
     session: Session = Depends(get_or_create_session),
     db: AsyncSession = Depends(get_db),

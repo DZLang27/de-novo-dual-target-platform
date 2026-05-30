@@ -16,12 +16,19 @@ SyncSessionLocal = None
 def _get_async_engine():
     global _async_engine
     if _async_engine is None:
-        _async_engine = create_async_engine(
-            settings.DATABASE_URL,
-            pool_size=20,
-            max_overflow=10,
-            echo=settings.ENVIRONMENT == "development",
-        )
+        # Handle SQLite special case (no pool settings)
+        if settings.DATABASE_URL.startswith("sqlite"):
+            _async_engine = create_async_engine(
+                settings.DATABASE_URL,
+                echo=settings.ENVIRONMENT == "development",
+            )
+        else:
+            _async_engine = create_async_engine(
+                settings.DATABASE_URL,
+                pool_size=20,
+                max_overflow=10,
+                echo=settings.ENVIRONMENT == "development",
+            )
     return _async_engine
 
 
@@ -39,8 +46,13 @@ def _get_async_sessionmaker():
 def _get_sync_sessionmaker():
     global SyncSessionLocal
     if SyncSessionLocal is None:
-        sync_url = settings.DATABASE_URL.replace("+asyncpg", "+psycopg2")
-        sync_engine = create_engine(sync_url)
+        # Handle SQLite
+        if settings.DATABASE_URL.startswith("sqlite"):
+            sync_url = settings.DATABASE_URL.replace("+aiosqlite", "")
+            sync_engine = create_engine(sync_url)
+        else:
+            sync_url = settings.DATABASE_URL.replace("+asyncpg", "+psycopg2")
+            sync_engine = create_engine(sync_url)
         SyncSessionLocal = sessionmaker(bind=sync_engine, expire_on_commit=False)
     return SyncSessionLocal
 
@@ -62,3 +74,8 @@ def get_sync_db():
     """Synchronous session factory for Celery workers."""
     sm = _get_sync_sessionmaker()
     return sm()
+
+
+# Helper for init_db.py
+def _get_engine():
+    return _get_async_engine()

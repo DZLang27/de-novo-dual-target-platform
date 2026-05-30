@@ -3,6 +3,9 @@
 from pathlib import Path
 from pydantic_settings import BaseSettings
 
+# Absolute path to .env file (backend directory)
+_BACKEND_DIR = Path(__file__).resolve().parent.parent
+
 
 class Settings(BaseSettings):
     APP_NAME: str = "De novo 双靶点抑制剂设计平台"
@@ -30,7 +33,7 @@ class Settings(BaseSettings):
     GPU_LOCK_TTL: int = 86400     # 24h max lock lifetime
 
     class Config:
-        env_file = ".env"
+        env_file = str(_BACKEND_DIR / ".env")
         env_file_encoding = "utf-8"
 
 

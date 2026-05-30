@@ -107,7 +107,7 @@ class TOMLGenerator:
 
         weight = override.weight if override and override.weight else 1.0
         transform_high = target_dto.get("transform_high", -6.0)
-        transform_low = target_dto.get("transform_low", -13.5)
+        transform_low = target_dto.get("transform_low", -14.5)  # Updated from -13.5
         transform_k = target_dto.get("transform_k", 0.2)
 
         lines.append("[[stage.scoring.component]]")
@@ -144,6 +144,8 @@ class TOMLGenerator:
                     lines.append(f'params.{key} = "{value}"')
                 else:
                     lines.append(f"params.{key} = {value}")
+        
+        # Add transform
         if comp.transform:
             lines.append("")
             lines.append(f"[stage.scoring.component.{comp_type}.endpoint.transform]")
@@ -164,4 +166,17 @@ class TOMLGenerator:
                 lines.append(f"slope = {comp.transform.slope}")
             if comp.transform.intercept is not None:
                 lines.append(f"intercept = {comp.transform.intercept}")
+        else:
+            # Auto-add transform for components that need it
+            if comp_type == "SAscore":
+                # SAscore: 1-10 range, lower is better
+                lines.append("")
+                lines.append(f"[stage.scoring.component.{comp_type}.endpoint.transform]")
+                lines.append('type = "reverse_sigmoid"')
+                lines.append("high = 10.0")
+                lines.append("low = 1.0")
+                lines.append("k = 0.2")
+            elif comp_type == "QED":
+                # QED: 0-1 range, higher is better - no transform needed
+                pass
         lines.append("")

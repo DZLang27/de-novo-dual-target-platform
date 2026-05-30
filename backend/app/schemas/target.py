@@ -31,7 +31,7 @@ class TargetUpdate(BaseModel):
 
 
 class TargetResponse(BaseModel):
-    id: UUID
+    id: str
     name: str
     protein_name: str | None
     pdbqt_filename: str
@@ -49,7 +49,7 @@ class TargetResponse(BaseModel):
 
 
 class TargetListItem(BaseModel):
-    id: UUID
+    id: str
     name: str
     protein_name: str | None
     pdbqt_filename: str

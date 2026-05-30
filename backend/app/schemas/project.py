@@ -17,7 +17,7 @@ class ProjectUpdate(BaseModel):
 
 
 class ProjectTargetLink(BaseModel):
-    target_id: UUID
+    target_id: str
     weight: float = Field(default=1.0, gt=0)
     center_x: float | None = None
     center_y: float | None = None
@@ -29,8 +29,8 @@ class ProjectTargetLink(BaseModel):
 
 
 class ProjectTargetResponse(BaseModel):
-    id: UUID
-    target_id: UUID
+    id: str
+    target_id: str
     target_name: str
     weight: float
     center_x: float | None
@@ -45,7 +45,7 @@ class ProjectTargetResponse(BaseModel):
 
 
 class ProjectResponse(BaseModel):
-    id: UUID
+    id: str
     name: str
     description: str | None
     created_at: datetime
@@ -55,7 +55,7 @@ class ProjectResponse(BaseModel):
 
 
 class ProjectListItem(BaseModel):
-    id: UUID
+    id: str
     name: str
     description: str | None
     created_at: datetime

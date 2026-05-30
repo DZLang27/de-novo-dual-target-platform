@@ -3,9 +3,8 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import String, Float, Integer, Boolean, ForeignKey, DateTime, Text
+from sqlalchemy import String, Float, Integer, Boolean, ForeignKey, DateTime, Text, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import UUID, JSONB
 
 from app.database import Base
 
@@ -13,11 +12,11 @@ from app.database import Base
 class Target(Base):
     __tablename__ = "targets"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    id: Mapped[str] = mapped_column(
+        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
     )
-    session_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("sessions.id", ondelete="CASCADE"), nullable=False
+    session_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("sessions.id", ondelete="CASCADE"), nullable=False
     )
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     protein_name: Mapped[str | None] = mapped_column(String(200), nullable=True)
@@ -30,7 +29,7 @@ class Target(Base):
     size_y: Mapped[float] = mapped_column(Float, nullable=False)
     size_z: Mapped[float] = mapped_column(Float, nullable=False)
     exhaustiveness: Mapped[int] = mapped_column(Integer, default=16)
-    metadata_: Mapped[dict | None] = mapped_column("metadata", JSONB, default=dict)
+    metadata_: Mapped[dict | None] = mapped_column("metadata", JSON, default=dict)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )

@@ -24,7 +24,7 @@ api_router.include_router(files_router, prefix="/files", tags=["files"])
 @api_router.websocket("/ws/tasks/{task_id}")
 async def task_ws(
     websocket: WebSocket,
-    task_id: UUID,
+    task_id: str,
     token: str = Query(...),
 ):
     from app.websocket.progress import progress_manager

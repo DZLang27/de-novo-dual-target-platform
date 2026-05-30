@@ -19,8 +19,8 @@ class MoleculeListParams(BaseModel):
 
 
 class MoleculeListItem(BaseModel):
-    id: UUID
-    task_id: UUID
+    id: str
+    task_id: str
     smiles: str
     step_number: int
     total_score: float
@@ -35,8 +35,8 @@ class MoleculeListItem(BaseModel):
 
 
 class DockingPoseResponse(BaseModel):
-    id: UUID
-    target_id: UUID
+    id: str
+    target_id: str
     target_name: str | None = None
     rank: int
     docking_score: float

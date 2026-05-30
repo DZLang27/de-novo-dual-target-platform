@@ -48,16 +48,23 @@ export interface QueueStatus {
   current_task_id?: string
 }
 
+export interface TaskListPage {
+  items: TaskData[]
+  total: number
+  page: number
+  page_size: number
+}
+
 export async function fetchTasks(
-  projectId?: string,
-  status?: string,
-  page = 1,
-  pageSize = 20,
-): Promise<TaskData[]> {
-  const params: any = { page, page_size: pageSize }
-  if (projectId) params.project_id = projectId
-  if (status) params.status = status
-  const { data } = await apiClient.get('/tasks', { params })
+  params: {
+    project_id?: string
+    status?: string
+    page?: number
+    page_size?: number
+  } = {},
+): Promise<TaskListPage> {
+  const { page = 1, page_size = 20, ...rest } = params
+  const { data } = await apiClient.get('/tasks', { params: { page, page_size, ...rest } })
   return data
 }
 
